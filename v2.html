@@ -109,7 +109,7 @@ button,input,select{font-family:inherit;color:var(--fg)}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 </style></head><body><div class="page">
 <noscript><p style="padding:20px">Este painel precisa de JavaScript habilitado.</p></noscript>
-<header><div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><div class="kick">ZONA DE PRATICAGEM 1 · AMAPÁ EXPLORER</div><h1>NavExpert <span>ZP-1</span></h1><div class="tagline">Análise de trajetórias e rotas de referência</div></div></div><div class="head-actions"><a href="./" class="version">Versão original ↗</a><button class="b" id="theme" type="button" aria-pressed="false">Tema escuro</button></div></header>
+<header><div class="brand"><img src="icon.svg" alt="" width="44" height="44"><div><div class="kick">ZONA DE PRATICAGEM 1 · AMAPÁ EXPLORER</div><h1>NavExpert <span>ZP-1</span></h1><div class="tagline">Análise de trajetórias e rotas de referência</div></div></div><div class="head-actions"><a href="original.html" class="version">Versão original ↗</a><button class="b" id="theme" type="button" aria-pressed="false">Tema escuro</button></div></header>
 <section class="overview" aria-label="Resumo das trajetórias selecionadas"><div><span>TRAJETÓRIAS ATIVAS</span><strong id="sumN">—</strong></div><div><span>DISTÂNCIA PERCORRIDA</span><strong id="sumDist">—</strong></div><div><span>MAIOR AFASTAMENTO</span><strong id="sumX">—</strong></div><div><span>PONTOS COM HORÁRIO</span><strong id="sumTime">—</strong></div></section>
 <div class="section-head"><div><h2>Missões e trajetórias</h2><div class="sub" id="sub"></div></div><div class="mission-actions"><input id="search" type="search" placeholder="Buscar missão…" aria-label="Buscar missão"><button class="b" id="all" type="button">Selecionar todas</button><button class="b" id="none" type="button">Limpar seleção</button></div></div>
 <div class="cards" id="cards"></div>
@@ -140,7 +140,7 @@ button,input,select{font-family:inherit;color:var(--fg)}
 <script>
 (async function(){
 'use strict';
-async function loadSourceData(){var response=await fetch('./index.html');if(!response.ok)throw new Error('Não foi possível carregar a base original.');var source=await response.text(),start=source.indexOf('var D=')+6,end=source.indexOf(';\n/* ---------- utilidades',start);if(start<6||end<start)throw new Error('Formato da base não reconhecido.');return JSON.parse(source.slice(start,end))}
+async function loadSourceData(){var response=await fetch('./original.html');if(!response.ok)throw new Error('Não foi possível carregar a base original.');var source=await response.text(),start=source.indexOf('var D=')+6,end=source.indexOf(';\n/* ---------- utilidades',start);if(start<6||end<start)throw new Error('Formato da base não reconhecido.');return JSON.parse(source.slice(start,end))}
 
 var D=await loadSourceData();
 /* ---------- utilidades (sem recursos modernos: ES2015 no máximo) ---------- */
