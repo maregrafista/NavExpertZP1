@@ -164,7 +164,7 @@ footer .fr{text-align:right;line-height:1.35;overflow:hidden;text-overflow:ellip
   <div class="panel" id="mapPanel">
    <canvas id="map" class="fill"></canvas>
    <div class="legend" id="lg"></div>
-   <div class="bm" role="group" aria-label="Fundo do mapa"><button type="button" class="b on" id="bmC">Cartas</button><button type="button" class="b" id="bmS">Satélite</button><button type="button" class="b" id="bmG" aria-label="Opções de satélite" title="Opções de satélite">⚙</button></div>
+   <div class="bm" role="group" aria-label="Fundo do mapa"><button type="button" class="b on" id="bmC">Cartas</button><button type="button" class="b" id="bmS">Satélite</button><button type="button" class="b" id="bmO">Mapa</button></div>
    <div id="attr"></div>
    <div id="load">Carregando cartas…</div>
    <div class="ctl"><button type="button" class="b" id="play" aria-label="Reproduzir ou pausar">▶</button><button type="button" class="b" id="rst" aria-label="Reiniciar">↺</button><input id="sc" type="range" min="0" max="1000" value="0" aria-label="Progresso"><span class="pt" id="pt">0%</span><select class="b" id="sp" aria-label="Velocidade"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select><button type="button" class="b" id="camb">Seguir</button></div>
@@ -179,16 +179,6 @@ footer .fr{text-align:right;line-height:1.35;overflow:hidden;text-overflow:ellip
  <footer><div class="developer-stamp"><span>DESENVOLVIDO PELO</span><strong>Setor de Hidrografia da UNIPILOT</strong></div><span class="fr">NavExpert ZP-1 · Perícia de navegação · AmEx<br>Afastamento = distância perpendicular à rota</span></footer>
 </main>
 
-<dialog class="method-dialog" id="dlg2" aria-labelledby="dlg2T">
- <div class="dialog-head"><h2 id="dlg2T">Imagem de satélite</h2><button type="button" id="dlg2-x">Fechar</button></div>
- <div class="dialog-body"><div class="satform">
-  <label>Fonte da imagem<select id="satprov"><option value="esri">Esri World Imagery (sem chave)</option><option value="google">Google (Map Tiles API, requer chave)</option></select></label>
-  <label id="gkeyw" hidden>Chave de API do Google Maps Platform<input id="gkey" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="AIza…"></label>
-  <div class="row"><button type="button" class="b" id="satsave">Salvar e usar</button><span id="satmsg" role="status"></span></div>
-  <p class="foot">A API do Google Earth foi encerrada em 2015. A imagem de satélite do Google chega agora pela Map Tiles API (Google Maps Platform), que exige uma chave com faturamento ativo. Restrinja a chave ao endereço deste site. A chave fica salva só neste aparelho.</p>
-  <p class="foot">Sem chave, o app usa a imagem da Esri. Em ambientes que bloqueiam imagens externas, o mapa volta sozinho para as cartas náuticas.</p>
- </div></div>
-</dialog>
 <dialog class="method-dialog" id="dlg" aria-labelledby="dlgT">
  <div class="dialog-head"><h2 id="dlgT">Adicionar dados</h2><button type="button" id="dlg-x">Fechar</button></div>
  <div class="dialog-body">
@@ -321,7 +311,7 @@ function drawMap(){
  function X(lo){return w/2+(lo*rad-view.cx)*view.k}
  function Y(la){return h/2-(my(la)-view.cy)*view.k}
  x.fillStyle='#fff';x.fillRect(0,0,w,h);
- var sat=(BASE==='sat')&&drawSat(x,w,h);
+ var sat=(BASE!=='charts')&&drawSat(x,w,h);
  if(!sat)D.charts.forEach(function(c){if(!c.img.complete||!c.img.naturalWidth)return;var xl=X(c.l),xr=X(c.r),yt=Y(c.top),yb=Y(c.bot);if(xr<0||xl>w||yb<0||yt>h)return;x.drawImage(c.img,xl,yt,xr-xl,yb-yt)});
  x.lineJoin='round';x.lineCap='round';
  uniq(A.map(function(m){return m.route})).forEach(function(id){var rt=ROUTES[id];if(sat){x.strokeStyle='rgba(255,255,255,.9)';x.lineWidth=5;x.beginPath();rt.pts.forEach(function(p,i){if(i)x.lineTo(X(p[1]),Y(p[0]));else x.moveTo(X(p[1]),Y(p[0]))});x.stroke()}setDash(x,[8,5]);x.strokeStyle='#000';x.lineWidth=2;x.beginPath();rt.pts.forEach(function(p,i){if(i)x.lineTo(X(p[1]),Y(p[0]));else x.moveTo(X(p[1]),Y(p[0]))});x.stroke();setDash(x,[]);
@@ -410,60 +400,41 @@ $('dlg-x').onclick=function(){if(dlg.close)dlg.close();else dlg.removeAttribute(
 $('b-dados').onclick=openDlg;
 if(window.ResizeObserver){var ro=new ResizeObserver(function(){dirty=true});ro.observe($('mapPanel'));ro.observe($('chPanel'))}
 
-/* ---------- fundo: cartas náuticas ou imagem de satélite ---------- */
-var BASE='charts',SAT={provider:'esri',key:'',session:null,cache:{},order:[],errs:0,cop:'',copAt:0,gLoading:false};
-try{var _b=localStorage.getItem('navexpert.base');if(_b==='sat'||_b==='charts')BASE=_b;SAT.provider=localStorage.getItem('navexpert.satprov')||'esri';SAT.key=localStorage.getItem('navexpert.gkey')||''}catch(e){}
-function satProv(){return(SAT.provider==='google'&&SAT.key&&SAT.session)?'google':'esri'}
-function satAttr(){return satProv()==='google'?('Imagens © Google'+(SAT.cop?' · '+SAT.cop:'')):'Imagens © Esri, Maxar, Earthstar Geographics e comunidade GIS'}
+/* ---------- fundo do mapa: cartas náuticas, satélite (Esri) ou OpenStreetMap ---------- */
+var BASE='charts',SAT={cache:{},order:[],errs:0};
+try{var _b=localStorage.getItem('navexpert.base');if(_b==='sat'||_b==='osm'||_b==='charts')BASE=_b;localStorage.removeItem('navexpert.gkey');localStorage.removeItem('navexpert.satprov')}catch(e){}
+function satAttr(){return BASE==='osm'?'© OpenStreetMap contributors':BASE==='sat'?'Imagens © Esri, Maxar, Earthstar Geographics e comunidade GIS':''}
 function satUrl(z,x,y){
- if(satProv()==='google')return 'https://tile.googleapis.com/v1/2dtiles/'+z+'/'+x+'/'+y+'?session='+encodeURIComponent(SAT.session)+'&key='+encodeURIComponent(SAT.key);
+ if(BASE==='osm')return 'https://tile.openstreetmap.org/'+z+'/'+x+'/'+y+'.png';
  return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/'+z+'/'+y+'/'+x}
-function satMsg(t,cls){var m=$('satmsg');m.textContent=t||'';m.className=cls||''}
-function satFail(){SAT.errs++;if(SAT.errs>=8&&BASE==='sat'){SAT.errs=0;satMsg('Imagem de satélite indisponível agora (rede, chave ou bloqueio). Voltando às cartas náuticas.','err');setBase('charts');if(!$('dlg2').open&&$('dlg2').showModal)try{$('dlg2').showModal()}catch(e){}}}
+function satFail(){SAT.errs++;if(SAT.errs>=8&&BASE!=='charts'){SAT.errs=0;$('attr').textContent='Mapa externo indisponível (rede ou bloqueio). Voltando às cartas.';var keep=BASE;setBase('charts');setTimeout(function(){if(BASE==='charts')$('attr').textContent=''},6000)}}
 function loadTile(t,url,cors){
  var im=new Image();if(cors)im.crossOrigin='anonymous';
  im.onload=function(){t.img=im;t.ok=true;SAT.errs=0;dirty=true};
  im.onerror=function(){if(cors){loadTile(t,url,false)}else{t.fail=true;satFail()}};
  im.src=url}
 function getTile(z,x,y){
- var k=satProv()+'/'+z+'/'+x+'/'+y,t=SAT.cache[k];if(t)return t;
+ var k=BASE+'/'+z+'/'+x+'/'+y,t=SAT.cache[k];if(t)return t;
  t=SAT.cache[k]={ok:false,fail:false,img:null};SAT.order.push(k);if(SAT.order.length>420){delete SAT.cache[SAT.order.shift()]}
  loadTile(t,satUrl(z,x,y),true);return t}
-function peekTile(z,x,y){var t=SAT.cache[satProv()+'/'+z+'/'+x+'/'+y];return t&&t.ok?t:null}
+function peekTile(z,x,y){var t=SAT.cache[BASE+'/'+z+'/'+x+'/'+y];return t&&t.ok?t:null}
 function drawSat(x,w,h){
  if(!view)return false;
- var dpr=EXP||dprOf(),z=Math.round(Math.log(view.k*2*Math.PI/256)/Math.LN2+(dpr>1.5?0.5:0));z=Math.max(1,Math.min(19,z));
+ var dpr=EXP||dprOf(),z=Math.round(Math.log(view.k*2*Math.PI/256)/Math.LN2+(dpr>1.5&&BASE==='sat'?0.5:0));z=Math.max(1,Math.min(BASE==='osm'?19:19,z));
  var n=Math.pow(2,z),TW=2*Math.PI/n*view.k;
  var lonL=view.cx-w/2/view.k,lonR=view.cx+w/2/view.k,merT=view.cy+h/2/view.k,merB=view.cy-h/2/view.k;
  var x0=Math.floor((lonL+Math.PI)/(2*Math.PI)*n),x1=Math.floor((lonR+Math.PI)/(2*Math.PI)*n),y0=Math.floor((Math.PI-merT)/(2*Math.PI)*n),y1=Math.floor((Math.PI-merB)/(2*Math.PI)*n);
  if((x1-x0+1)*(y1-y0+1)>150)return false;
- x.fillStyle='#b9c4cb';x.fillRect(0,0,w,h);
+ x.fillStyle=BASE==='osm'?'#e8e4d8':'#b9c4cb';x.fillRect(0,0,w,h);
  for(var ty=Math.max(0,y0);ty<=Math.min(n-1,y1);ty++)for(var tx=x0;tx<=x1;tx++){
   var xt=((tx%n)+n)%n,sx=w/2+((tx/n*2*Math.PI-Math.PI)-view.cx)*view.k,sy=h/2-((Math.PI-ty/n*2*Math.PI)-view.cy)*view.k,t=getTile(z,xt,ty);
   if(t.ok){x.drawImage(t.img,sx,sy,TW+.6,TW+.6);continue}
   for(var d=1;d<=3&&z-d>=0;d++){var f=Math.pow(2,d),p=peekTile(z-d,Math.floor(xt/f),Math.floor(ty/f));if(p){var ss=256/f;x.drawImage(p.img,(xt%f)*ss,(ty%f)*ss,ss,ss,sx,sy,TW+.6,TW+.6);break}}}
- if(satProv()==='google'&&Date.now()-SAT.copAt>1500){SAT.copAt=Date.now();
-  try{fetch('https://tile.googleapis.com/tile/v1/viewport?session='+encodeURIComponent(SAT.session)+'&key='+encodeURIComponent(SAT.key)+'&zoom='+z+'&north='+(2*Math.atan(Math.exp(merT))-Math.PI/2)*180/Math.PI+'&south='+(2*Math.atan(Math.exp(merB))-Math.PI/2)*180/Math.PI+'&east='+lonR*180/Math.PI+'&west='+lonL*180/Math.PI).then(function(r){return r.json()}).then(function(j){if(j&&j.copyright&&j.copyright!==SAT.cop){SAT.cop=j.copyright;$('attr').textContent=satAttr()}}).catch(function(){})}catch(e){}}
  return true}
-var bmC=$('bmC'),bmS=$('bmS');
-function updBase(){bmC.className=BASE==='charts'?'b on':'b';bmS.className=BASE==='sat'?'b on':'b';$('attr').textContent=BASE==='sat'?satAttr():'';bmC.setAttribute('aria-pressed',BASE==='charts');bmS.setAttribute('aria-pressed',BASE==='sat')}
-function setBase(b){BASE=b;try{localStorage.setItem('navexpert.base',b)}catch(e){}updBase();dirty=true}
-function gSession(cb){
- if(!SAT.key){cb(new Error('Informe a chave de API.'));return}
- fetch('https://tile.googleapis.com/v1/createSession?key='+encodeURIComponent(SAT.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mapType:'satellite',language:'pt-BR',region:'BR'})})
-  .then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error((j.error&&j.error.message)||('HTTP '+r.status));return j})})
-  .then(function(j){SAT.session=j.session;cb(null)}).catch(function(e){SAT.session=null;cb(e)})}
-bmC.onclick=function(){setBase('charts')};
-bmS.onclick=function(){SAT.errs=0;if(SAT.provider==='google'&&SAT.key&&!SAT.session){gSession(function(e){if(e)satMsg('Google: '+e.message+' — usando Esri.','err');setBase('sat')})}else setBase('sat')};
-$('bmG').onclick=function(){$('satprov').value=SAT.provider;$('gkey').value=SAT.key;$('gkeyw').hidden=SAT.provider!=='google';satMsg('');var d=$('dlg2');if(d.showModal)d.showModal();else d.setAttribute('open','')};
-$('dlg2-x').onclick=function(){var d=$('dlg2');if(d.close)d.close();else d.removeAttribute('open')};
-$('satprov').onchange=function(){$('gkeyw').hidden=this.value!=='google'};
-$('satsave').onclick=function(){
- var p=$('satprov').value,k=$('gkey').value.replace(/^\s+|\s+$/g,'');SAT.provider=p;SAT.key=p==='google'?k:SAT.key;SAT.session=null;SAT.cache={};SAT.order=[];SAT.errs=0;
- try{localStorage.setItem('navexpert.satprov',p);if(p==='google')localStorage.setItem('navexpert.gkey',k)}catch(e){}
- if(p==='google'){satMsg('Testando a chave…');gSession(function(e){if(e){SAT.provider='esri';satMsg('Chave recusada: '+e.message+'. Usando Esri.','err')}else satMsg('Chave aceita. Imagem do Google ativa.','ok');setBase('sat')})}
- else{satMsg('Usando Esri World Imagery.','ok');setBase('sat')}};
-if(SAT.provider==='google'&&SAT.key){gSession(function(e){if(e)SAT.provider='esri';dirty=true})}
+var bmC=$('bmC'),bmS=$('bmS'),bmO=$('bmO');
+function updBase(){bmC.className=BASE==='charts'?'b on':'b';bmS.className=BASE==='sat'?'b on':'b';bmO.className=BASE==='osm'?'b on':'b';$('attr').textContent=satAttr();bmC.setAttribute('aria-pressed',BASE==='charts');bmS.setAttribute('aria-pressed',BASE==='sat');bmO.setAttribute('aria-pressed',BASE==='osm')}
+function setBase(b){BASE=b;SAT.errs=0;try{localStorage.setItem('navexpert.base',b)}catch(e){}updBase();dirty=true}
+bmC.onclick=function(){setBase('charts')};bmS.onclick=function(){setBase('sat')};bmO.onclick=function(){setBase('osm')};
 updBase();
 
 
