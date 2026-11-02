@@ -160,7 +160,6 @@ footer .fr{text-align:right;line-height:1.35;overflow:hidden;text-overflow:ellip
 .k small{display:block;white-space:normal;overflow:visible;font-size:10px;line-height:1.15}
 .ct b{white-space:normal;line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 @media(max-width:900px){.cards{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-columns:auto}.card{padding:4px 7px 5px}.k b{font-size:17px}.k small{font-size:9.5px}}
-@media(max-width:900px){.legend{top:46px}}
 
 /* sobreposições do mapa: transparentes para não cobrir a imagem; opacas ao tocar */
 .legend{background:rgba(255,255,255,.52);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);border-color:rgba(255,255,255,.55);color:#1c2b38}
@@ -171,6 +170,27 @@ footer .fr{text-align:right;line-height:1.35;overflow:hidden;text-overflow:ellip
 .bm:hover,.bm:focus-within,.ctl:hover,.ctl:focus-within{background:rgba(255,255,255,.88)}
 .bm:hover .b,.bm:focus-within .b,.ctl:hover .b,.ctl:focus-within .b{background:#fff}
 .bm:hover .b.on,.ctl:hover .b.on,.bm:focus-within .b.on,.ctl:focus-within .b.on{background:var(--forest)}
+
+.legend{left:8px;top:8px}
+#attr{font-size:8px;line-height:1.2;padding:0 4px;letter-spacing:.01em}
+#bmF{display:inline-flex;align-items:center;justify-content:center;padding:0 8px}
+@media(max-width:420px){.legend{font-size:9px;padding:2px 5px;line-height:1.35}.legend i{width:12px;margin-right:4px}.bm{gap:2px;padding:2px;right:6px;top:6px}.bm .b{padding:0 6px;font-size:11px}#bmF{padding:0 7px}.legend{left:6px;top:6px}}
+@media(max-width:340px){.legend{font-size:8.5px}.bm .b{padding:0 4px;font-size:10px}}
+.panel.fs{position:fixed;top:0;left:0;right:0;bottom:0;width:auto;height:auto;margin:0;border:0;border-radius:0;z-index:2000;background:#fff}
+.panel.fs .legend{left:calc(8px + env(safe-area-inset-left,0px));top:calc(8px + env(safe-area-inset-top,0px))}
+.panel.fs .bm{right:calc(8px + env(safe-area-inset-right,0px));top:calc(8px + env(safe-area-inset-top,0px))}
+.panel.fs .ctl{left:calc(8px + env(safe-area-inset-left,0px));right:calc(8px + env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px))}
+.panel.fs #attr{bottom:calc(54px + env(safe-area-inset-bottom,0px));right:calc(8px + env(safe-area-inset-right,0px))}
+body.fsmode{overflow:hidden}
+
+@media(max-width:420px){.k small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:9px}.card{padding:3px 6px 4px}.k b{font-size:16px}.ct b{font-size:12px}}
+@media(max-width:900px) and (max-height:700px){#sub{display:none}.fig{grid-template-rows:minmax(0,1.9fr) minmax(0,1fr)}}
+@media(max-width:340px){.legend{font-size:8px;padding:1px 4px}.legend i{width:10px}.bm .b{font-size:9.5px;padding:0 4px;height:24px}#bmF{padding:0 5px}.bm{gap:1px;padding:1px}.ct b{font-size:11px}}
+
+.big{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.k{min-width:0}
+@media(max-width:900px) and (orientation:landscape){.cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(min-width:600px) and (max-width:900px){.cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:340px){.ctl .pt{display:none}.ctl{gap:3px;padding:2px 3px}.ctl .b{min-width:28px;padding:0 5px}.ctl select.b{padding:0 14px 0 4px}}
 </style>
 
 <header><div class="top">
@@ -184,7 +204,7 @@ footer .fr{text-align:right;line-height:1.35;overflow:hidden;text-overflow:ellip
   <div class="panel" id="mapPanel">
    <canvas id="map" class="fill"></canvas>
    <div class="legend" id="lg"></div>
-   <div class="bm" role="group" aria-label="Fundo do mapa"><button type="button" class="b on" id="bmC">Cartas</button><button type="button" class="b" id="bmS">Satélite</button><button type="button" class="b" id="bmO">Mapa</button></div>
+   <div class="bm" role="group" aria-label="Fundo do mapa"><button type="button" class="b on" id="bmC">Cartas</button><button type="button" class="b" id="bmS">Satélite</button><button type="button" class="b" id="bmO">Mapa</button><button type="button" class="b" id="bmF" aria-label="Tela cheia" title="Tela cheia"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9"/></svg></button></div>
    <div id="attr"></div>
    <div id="load">Carregando as cartas…</div>
    <div class="ctl"><button type="button" class="b" id="play" aria-label="Reproduzir ou pausar">▶</button><button type="button" class="b" id="rst" aria-label="Reiniciar">↺</button><input id="sc" type="range" min="0" max="1000" value="0" aria-label="Progresso"><span class="pt" id="pt">0%</span><select class="b" id="sp" aria-label="Velocidade"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select><button type="button" class="b" id="camb" title="Seguir o barco">Seguir</button></div>
@@ -196,7 +216,7 @@ footer .fr{text-align:right;line-height:1.35;overflow:hidden;text-overflow:ellip
    <div class="cnote" id="dmsg"></div>
   </div>
  </div>
- <footer><div class="developer-stamp"><span>DESENVOLVIDO PELO</span><strong>Setor de Hidrografia da UNIPILOT</strong></div><span class="fr">NavExpert ZP-1 · <span class="verinfo">v1.1.1</span><br>Desvio = distância perpendicular à rota</span></footer>
+ <footer><div class="developer-stamp"><span>DESENVOLVIDO PELO</span><strong>Setor de Hidrografia da UNIPILOT</strong></div><span class="fr">NavExpert ZP-1 · <span class="verinfo">v1.2.0</span><br>Desvio = distância perpendicular à rota</span></footer>
 </main>
 
 <dialog class="method-dialog" id="dlg" aria-labelledby="dlgT">
@@ -206,7 +226,7 @@ footer .fr{text-align:right;line-height:1.35;overflow:hidden;text-overflow:ellip
    <label class="drop" id="dz1">Adicionar trajetória (.gpx)<input type="file" id="fup" multiple></label>
    <label class="drop" id="dz2">Adicionar rota (.gpx)<input type="file" id="rup"></label>
   </div>
-  <p class="foot" id="aboutinfo">NavExpert ZP-1 · <span class="verinfo">v1.1.1</span></p>
+  <p class="foot" id="aboutinfo">NavExpert ZP-1 · <span class="verinfo">v1.2.0</span></p>
   <label class="foot" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="owner"> Este aparelho é meu. Não contar como visitante.</label>
   <p class="foot" id="upmsg">O app associa a trajetória nova à rota mais próxima. Para trocar a rota, use o cartão da missão.</p>
   <p class="foot">O desvio é a distância perpendicular à rota. 1 mn é igual a 1 milha náutica. Velocidade e maré precisam de horário nos pontos. A maré vem das tábuas de 2026 (Santana, Curuá e Arco Lamoso). O app calcula a maré até 60 mn de uma estação.</p>
@@ -298,7 +318,7 @@ function cards(){
  $('cards').innerHTML=M.map(function(m,i){
   return '<div class="card'+(m.on?'':' off')+'" style="--c:'+m.color+';border-left-color:'+m.color+'">'+
   '<div class="ct"><label><input type="checkbox" '+(m.on?'checked':'')+' data-i="'+i+'"><b title="'+m.label+'">'+m.label+'</b></label>'+(m.up?'<select data-r="'+i+'" title="Rota da missão">'+opts(m.route)+'</select><button type="button" class="x" data-x="'+i+'" title="Remover missão">✕</button>':'')+'</div>'+
-  '<div class="big"><div class="k hot"><b>'+nf(m.xmax)+'</b><small>Desvio máximo (mn)</small></div><div class="k"><b>'+nf(m.p1,0)+'%</b><small title="Pontos da trajetória com desvio maior que 1 mn">Pontos acima de 1 mn</small></div></div></div>'}).join('');
+  '<div class="big"><div class="k hot"><b>'+nf(m.xmax)+'</b><small title="Desvio máximo da trajetória em relação à rota (mn)">Desvio máx. (mn)</small></div><div class="k"><b>'+nf(m.p1,0)+'%</b><small title="Pontos da trajetória com desvio maior que 1 mn">Acima de 1 mn</small></div></div></div>'}).join('');
  [].forEach.call(document.querySelectorAll('#cards input'),function(e){e.onchange=function(){M[+e.getAttribute('data-i')].on=e.checked;refresh()}});
  [].forEach.call(document.querySelectorAll('#cards select'),function(e){e.onchange=function(){var m=M[+e.getAttribute('data-r')];m.route=e.value;compute(m);refresh()}});
  [].forEach.call(document.querySelectorAll('#cards .x'),function(e){e.onclick=function(ev){ev.preventDefault();M.splice(+e.getAttribute('data-x'),1);refresh()}});
@@ -418,7 +438,7 @@ $('dlg-x').onclick=function(){if(dlg.close)dlg.close();else dlg.removeAttribute(
 $('b-dados').onclick=openDlg;
 if(window.ResizeObserver){var ro=new ResizeObserver(function(){dirty=true});ro.observe($('mapPanel'));ro.observe($('chPanel'))}
 /* ---------- versão e contador de visitantes (um aparelho conta uma vez; o dono não conta) ---------- */
-var APP_VERSION='1.1.1',APP_DATE='02/11/2026',CNT='https://abacus.jasoncameron.dev/',CNT_NS='maregrafista-navexpertzp-1',CNT_KEY='visitantes';
+var APP_VERSION='1.2.0',APP_DATE='02/11/2026',CNT='https://abacus.jasoncameron.dev/',CNT_NS='maregrafista-navexpertzp-1',CNT_KEY='visitantes';
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function lsSet(k,v){try{localStorage.setItem(k,v);return true}catch(e){return false}}
 function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
@@ -478,6 +498,22 @@ var bmC=$('bmC'),bmS=$('bmS'),bmO=$('bmO');
 function updBase(){bmC.className=BASE==='charts'?'b on':'b';bmS.className=BASE==='sat'?'b on':'b';bmO.className=BASE==='osm'?'b on':'b';$('attr').textContent=satAttr();bmC.setAttribute('aria-pressed',BASE==='charts');bmS.setAttribute('aria-pressed',BASE==='sat');bmO.setAttribute('aria-pressed',BASE==='osm')}
 function setBase(b){BASE=b;SAT.errs=0;try{localStorage.setItem('navexpert.base',b)}catch(e){}updBase();dirty=true}
 bmC.onclick=function(){setBase('charts')};bmS.onclick=function(){setBase('sat')};bmO.onclick=function(){setBase('osm')};
+/* ---------- tela cheia do mapa ---------- */
+var fsOn=false,fsNative=false,mpan=$('mapPanel'),bmF=$('bmF');
+var FS_IN='<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 5V1h4M9 1h4v4M13 9v4H9M5 13H1V9"/></svg>';
+var FS_OUT='<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 1v4H1M13 5H9V1M9 13V9h4M1 9h4v4"/></svg>';
+function nativeEl(){return document.fullscreenElement||document.webkitFullscreenElement||null}
+function setFs(on){
+ fsOn=on;mpan.className=on?'panel fs':'panel';document.body.className=on?'fsmode':'';
+ bmF.innerHTML=on?FS_OUT:FS_IN;var l=on?'Sair da tela cheia':'Tela cheia';bmF.setAttribute('aria-label',l);bmF.title=l;
+ if(on){var r=mpan.requestFullscreen||mpan.webkitRequestFullscreen;if(r){try{var p=r.call(mpan);fsNative=true;if(p&&p.catch)p.catch(function(){fsNative=false})}catch(e){fsNative=false}}}
+ else if(nativeEl()){var x=document.exitFullscreen||document.webkitExitFullscreen;fsNative=false;if(x)try{var q=x.call(document);if(q&&q.catch)q.catch(function(){})}catch(e){}}
+ dirty=true;setTimeout(function(){dirty=true},250)}
+bmF.onclick=function(){setFs(!fsOn)};
+function onFsChange(){if(fsOn&&fsNative&&!nativeEl())setFs(false)}
+document.addEventListener('fullscreenchange',onFsChange);document.addEventListener('webkitfullscreenchange',onFsChange);
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&fsOn&&!nativeEl())setFs(false)});
+
 updBase();
 
 
